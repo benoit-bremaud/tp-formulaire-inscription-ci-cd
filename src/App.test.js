@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 
-import { App } from './App';
+import { App, validateForm } from './App';
 
 afterEach(() => {
   localStorage.clear();
@@ -20,31 +20,100 @@ function fillFormWithValidValues() {
   fireEvent.change(screen.getByLabelText('Code postal'), { target: { value: '06130' } });
 }
 
-describe('App initial render', () => {
-  test('renders all form fields with their labels', () => {
-    render(<App />);
+describe('happy path', () => {
+  describe('App component', () => {
+    test('renders all form fields with their labels', () => {
+      render(<App />);
 
-    expect(screen.getByLabelText('Nom')).toBeInTheDocument();
-    expect(screen.getByLabelText('Prénom')).toBeInTheDocument();
-    expect(screen.getByLabelText('Email')).toBeInTheDocument();
-    expect(screen.getByLabelText('Date de naissance')).toBeInTheDocument();
-    expect(screen.getByLabelText('Ville')).toBeInTheDocument();
-    expect(screen.getByLabelText('Code postal')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /s'inscrire/i })).toBeInTheDocument();
+      expect(screen.getByLabelText('Nom')).toBeInTheDocument();
+      expect(screen.getByLabelText('Prénom')).toBeInTheDocument();
+      expect(screen.getByLabelText('Email')).toBeInTheDocument();
+      expect(screen.getByLabelText('Date de naissance')).toBeInTheDocument();
+      expect(screen.getByLabelText('Ville')).toBeInTheDocument();
+      expect(screen.getByLabelText('Code postal')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /s'inscrire/i })).toBeInTheDocument();
+    });
+
+    test('submit button becomes enabled once every field is filled', () => {
+      render(<App />);
+      fillFormWithValidValues();
+
+      expect(screen.getByRole('button', { name: /s'inscrire/i })).toBeEnabled();
+    });
+  });
+
+  describe('validateForm', () => {
+    test('returns an empty errors object when the form is valid', () => {
+      const validForm = {
+        nom: 'Bremaud',
+        prenom: 'Benoit',
+        email: 'benoit@example.com',
+        dateNaissance: '1981-05-22',
+        ville: 'Grasse',
+        codePostal: '06130',
+      };
+
+      expect(validateForm(validForm)).toEqual({});
+    });
   });
 });
 
-describe('App submit button state', () => {
-  test('is disabled when the form is empty', () => {
-    render(<App />);
+describe('sad path', () => {
+  describe('App component', () => {
+    test('submit button is disabled when the form is empty', () => {
+      render(<App />);
 
-    expect(screen.getByRole('button', { name: /s'inscrire/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /s'inscrire/i })).toBeDisabled();
+    });
   });
 
-  test('becomes enabled once every field is filled', () => {
-    render(<App />);
-    fillFormWithValidValues();
+  describe('validateForm', () => {
+    test('returns errors for every field when the form is empty', () => {
+      const emptyForm = {
+        nom: '',
+        prenom: '',
+        email: '',
+        dateNaissance: '',
+        ville: '',
+        codePostal: '',
+      };
 
-    expect(screen.getByRole('button', { name: /s'inscrire/i })).toBeEnabled();
+      expect(validateForm(emptyForm)).toEqual({
+        nom: 'Nom invalide',
+        prenom: 'Prénom invalide',
+        email: 'Email invalide',
+        dateNaissance: 'Vous devez avoir au moins 18 ans',
+        ville: 'Ville invalide',
+        codePostal: 'Code postal invalide (5 chiffres attendus)',
+      });
+    });
+
+    test('returns the dateNaissance error when the user is under 18', () => {
+      const today = new Date();
+      const seventeenYearsAgo = new Date(
+        today.getFullYear() - 17,
+        today.getMonth(),
+        today.getDate(),
+      );
+      const isoDate = seventeenYearsAgo.toISOString().split('T')[0];
+
+      const formWithMinor = {
+        nom: 'Bremaud',
+        prenom: 'Benoit',
+        email: 'benoit@example.com',
+        dateNaissance: isoDate,
+        ville: 'Grasse',
+        codePostal: '06130',
+      };
+
+      expect(validateForm(formWithMinor)).toEqual({
+        dateNaissance: 'Vous devez avoir au moins 18 ans',
+      });
+    });
   });
+});
+
+describe('edge cases', () => {
+  // Reserved for boundary scenarios such as legacy registrants in localStorage,
+  // accent-heavy names, leap-year dates, etc. Filled in upcoming PRs.
 });
