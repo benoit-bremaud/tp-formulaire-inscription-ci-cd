@@ -1,24 +1,90 @@
 import './App.css';
 
+import { useEffect, useState } from 'react';
+
 import { isAdult, isValidEmail, isValidName, isValidPostalCode } from './validators';
 
-import { useState } from 'react';
+export const EMPTY_FORM = {
+  nom: '',
+  prenom: '',
+  email: '',
+  dateNaissance: '',
+  ville: '',
+  codePostal: '',
+};
 
-function App() {
-  const [form, setForm] = useState({
-    nom: '',
-    prenom: '',
-    email: '',
-    dateNaissance: '',
-    ville: '',
-    codePostal: '',
-  });
+export const ERROR_MESSAGES = {
+  nom: 'Nom invalide',
+  prenom: 'Prénom invalide',
+  email: 'Email invalide',
+  dateNaissance: 'Vous devez avoir au moins 18 ans',
+  ville: 'Ville invalide',
+  codePostal: 'Code postal invalide (5 chiffres attendus)',
+};
+
+const TOAST_DURATION_MS = 3000;
+const STORAGE_KEY = 'registrants';
+
+/**
+ * Validates a registration form and returns an errors object.
+ * @param {object} form - Form values keyed by field name.
+ * @returns {object} Errors keyed by field name; empty object means valid.
+ */
+export function validateForm(form) {
+  const errors = {};
+  if (!isValidName(form.nom)) {
+    errors.nom = ERROR_MESSAGES.nom;
+  }
+  if (!isValidName(form.prenom)) {
+    errors.prenom = ERROR_MESSAGES.prenom;
+  }
+  if (!isValidEmail(form.email)) {
+    errors.email = ERROR_MESSAGES.email;
+  }
+  if (!form.dateNaissance || !isAdult(new Date(form.dateNaissance))) {
+    errors.dateNaissance = ERROR_MESSAGES.dateNaissance;
+  }
+  if (!isValidName(form.ville)) {
+    errors.ville = ERROR_MESSAGES.ville;
+  }
+  if (!isValidPostalCode(form.codePostal)) {
+    errors.codePostal = ERROR_MESSAGES.codePostal;
+  }
+  return errors;
+}
+
+function loadRegistrants() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRegistrants(registrants) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(registrants));
+  } catch {
+    // localStorage unavailable (quota, private mode); silently ignore
+  }
+}
+
+function generateId() {
+  return `reg_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+}
+
+export function App() {
+  const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [toastVisible, setToastVisible] = useState(false);
-  const [registrants, setRegistrants] = useState(() => {
-    const saved = localStorage.getItem('registrants');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [registrants, setRegistrants] = useState(loadRegistrants);
+
+  useEffect(() => {
+    if (!toastVisible) return undefined;
+    const timerId = setTimeout(() => setToastVisible(false), TOAST_DURATION_MS);
+    return () => clearTimeout(timerId);
+  }, [toastVisible]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -27,48 +93,20 @@ function App() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const newErrors = {};
-
-    if (!isValidName(form.nom)) {
-      newErrors.nom = 'Nom invalide';
-    }
-    if (!isValidName(form.prenom)) {
-      newErrors.prenom = 'Prénom invalide';
-    }
-    if (!isValidEmail(form.email)) {
-      newErrors.email = 'Email invalide';
-    }
-    if (!form.dateNaissance || !isAdult(new Date(form.dateNaissance))) {
-      newErrors.dateNaissance = 'Vous devez avoir au moins 18 ans';
-    }
-    if (!isValidName(form.ville)) {
-      newErrors.ville = 'Ville invalide';
-    }
-    if (!isValidPostalCode(form.codePostal)) {
-      newErrors.codePostal = 'Code postal invalide (5 chiffres attendus)';
-    }
+    const newErrors = validateForm(form);
+    setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      // formulaire valide
-      const updated = [...registrants, form];
+      const registrant = { ...form, id: generateId() };
+      const updated = [...registrants, registrant];
       setRegistrants(updated);
-      localStorage.setItem('registrants', JSON.stringify(updated));
-
-      setForm({
-        nom: '',
-        prenom: '',
-        email: '',
-        dateNaissance: '',
-        ville: '',
-        codePostal: '',
-      });
+      saveRegistrants(updated);
+      setForm(EMPTY_FORM);
       setToastVisible(true);
-      setTimeout(() => setToastVisible(false), 3000);
     }
-
-
-    setErrors(newErrors);
   };
+
+  const isFormIncomplete = Object.values(form).some((value) => !value);
 
   return (
     <div className="App">
@@ -81,7 +119,6 @@ function App() {
       )}
 
       <form onSubmit={handleSubmit}>
-
         <div>
           <label htmlFor="nom">Nom</label>
           <input id="nom" name="nom" type="text" value={form.nom} onChange={handleChange} />
@@ -118,23 +155,23 @@ function App() {
           {errors.codePostal && <span className="error">{errors.codePostal}</span>}
         </div>
 
-        <button type="submit" disabled={Object.values(form).some(value => !value)}>S'inscrire</button>
+        <button type="submit" disabled={isFormIncomplete}>
+          S'inscrire
+        </button>
       </form>
 
       <h2>Liste des inscrits</h2>
-        {registrants.length === 0 ? (
-          <p>Aucun inscrit pour le moment.</p>
-        ) : (
-          <ul>
-            {registrants.map((r, index) => (
-              <li key={index}>
-                {r.prenom} {r.nom} — {r.email} ({r.ville}, {r.codePostal})
-              </li>
-            ))}
-          </ul>
-        )}
+      {registrants.length === 0 ? (
+        <p>Aucun inscrit pour le moment.</p>
+      ) : (
+        <ul>
+          {registrants.map((registrant) => (
+            <li key={registrant.id}>
+              {registrant.prenom} {registrant.nom}, {registrant.email} ({registrant.ville}, {registrant.codePostal})
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
-
-export default App;
