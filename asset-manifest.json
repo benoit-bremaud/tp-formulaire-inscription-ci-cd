@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/tp-formulaire-inscription-ci-cd/static/css/main.9db15563.css",
+    "main.js": "/tp-formulaire-inscription-ci-cd/static/js/main.08d1be38.js",
+    "static/js/453.1930f35d.chunk.js": "/tp-formulaire-inscription-ci-cd/static/js/453.1930f35d.chunk.js",
+    "index.html": "/tp-formulaire-inscription-ci-cd/index.html",
+    "main.9db15563.css.map": "/tp-formulaire-inscription-ci-cd/static/css/main.9db15563.css.map",
+    "main.08d1be38.js.map": "/tp-formulaire-inscription-ci-cd/static/js/main.08d1be38.js.map",
+    "453.1930f35d.chunk.js.map": "/tp-formulaire-inscription-ci-cd/static/js/453.1930f35d.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.9db15563.css",
+    "static/js/main.08d1be38.js"
+  ]
+}
