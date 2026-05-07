@@ -16,8 +16,11 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --coverage --collectCoverageFrom=src/**/*.{js,jsx} --collectCoverageFrom=!src/reportWebVitals.js --collectCoverageFrom=!src/index.js",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
+  "homepage": "https://benoit-bremaud.github.io/tp-formulaire-inscription-ci-cd/",
   "eslintConfig": {
     "extends": [
       "react-app",
@@ -39,8 +42,5 @@
   "devDependencies": {
     "gh-pages": "^6.3.0",
     "react-test-renderer": "^19.2.5"
-  },
-  "predeploy": "npm run build",
-  "deploy": "gh-pages -d build",
-  "homepage": "https://benoit-bremaud.github.io/tp-formulaire-inscription-ci-cd/"
+  }
 }
