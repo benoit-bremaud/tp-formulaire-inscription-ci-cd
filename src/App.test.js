@@ -68,6 +68,10 @@ describe('sad path', () => {
   });
 
   describe('validateForm', () => {
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
     test('returns errors for every field when the form is empty', () => {
       const emptyForm = {
         nom: '',
@@ -89,19 +93,16 @@ describe('sad path', () => {
     });
 
     test('returns the dateNaissance error when the user is under 18', () => {
-      const today = new Date();
-      const seventeenYearsAgo = new Date(
-        today.getFullYear() - 17,
-        today.getMonth(),
-        today.getDate(),
-      );
-      const isoDate = seventeenYearsAgo.toISOString().split('T')[0];
+      // Freeze time so the assertion does not depend on the machine clock or
+      // local timezone. The fixed birth date below is exactly 17 years before
+      // the frozen system time, which guarantees the user is under 18.
+      jest.useFakeTimers().setSystemTime(new Date('2026-05-07T00:00:00Z'));
 
       const formWithMinor = {
         nom: 'Bremaud',
         prenom: 'Benoit',
         email: 'benoit@example.com',
-        dateNaissance: isoDate,
+        dateNaissance: '2009-05-07',
         ville: 'Grasse',
         codePostal: '06130',
       };
