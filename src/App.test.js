@@ -4,6 +4,7 @@ import { App, validateForm } from './App';
 
 afterEach(() => {
   localStorage.clear();
+  jest.useRealTimers();
 });
 
 /**
@@ -36,10 +37,6 @@ function fillFormWithInvalidValues() {
 
 describe('happy path', () => {
   describe('App component', () => {
-    afterEach(() => {
-      jest.useRealTimers();
-    });
-
     test('renders all form fields with their labels', () => {
       render(<App />);
 
@@ -95,7 +92,7 @@ describe('happy path', () => {
         ville: 'Grasse',
         codePostal: '06130',
       });
-      expect(stored[0].id).toEqual(expect.any(String));
+      expect(stored[0].id).toMatch(/^reg_/);
     });
   });
 
@@ -117,10 +114,6 @@ describe('happy path', () => {
 
 describe('sad path', () => {
   describe('App component', () => {
-    afterEach(() => {
-      jest.useRealTimers();
-    });
-
     test('submit button is disabled when the form is empty', () => {
       render(<App />);
 
@@ -153,10 +146,6 @@ describe('sad path', () => {
   });
 
   describe('validateForm', () => {
-    afterEach(() => {
-      jest.useRealTimers();
-    });
-
     test('returns errors for every field when the form is empty', () => {
       const emptyForm = {
         nom: '',
