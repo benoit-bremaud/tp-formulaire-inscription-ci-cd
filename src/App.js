@@ -56,7 +56,13 @@ export function validateForm(form) {
 function loadRegistrants() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : [];
+    if (!saved) return [];
+    const parsed = JSON.parse(saved);
+    // Backfill ids for records persisted before id was introduced so that
+    // list keys remain unique and stable across renders.
+    return parsed.map((registrant) =>
+      registrant.id ? registrant : { ...registrant, id: generateId() }
+    );
   } catch {
     return [];
   }
