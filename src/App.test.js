@@ -12,12 +12,12 @@ afterEach(() => {
  * persistence, etc.).
  */
 function fillFormWithValidValues() {
-  fireEvent.change(screen.getByLabelText('Nom'), { target: { value: 'Dupont' } });
-  fireEvent.change(screen.getByLabelText('Prénom'), { target: { value: 'Alice' } });
-  fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'alice@example.com' } });
-  fireEvent.change(screen.getByLabelText('Date de naissance'), { target: { value: '1990-05-12' } });
-  fireEvent.change(screen.getByLabelText('Ville'), { target: { value: 'Paris' } });
-  fireEvent.change(screen.getByLabelText('Code postal'), { target: { value: '75001' } });
+  fireEvent.change(screen.getByLabelText('Nom'), { target: { value: 'Bremaud' } });
+  fireEvent.change(screen.getByLabelText('Prénom'), { target: { value: 'Benoit' } });
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'benoit@example.com' } });
+  fireEvent.change(screen.getByLabelText('Date de naissance'), { target: { value: '1981-05-22' } });
+  fireEvent.change(screen.getByLabelText('Ville'), { target: { value: 'Grasse' } });
+  fireEvent.change(screen.getByLabelText('Code postal'), { target: { value: '06130' } });
 }
 
 describe('App initial render', () => {
