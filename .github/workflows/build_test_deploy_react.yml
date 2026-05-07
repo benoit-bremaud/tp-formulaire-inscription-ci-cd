@@ -7,6 +7,13 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+
+# Permissions inherited by all jobs — required for the GitHub Pages deployment chain
+permissions:
+  contents: read     # checkout the repository
+  pages: write       # call the Pages API (configure, upload artifact, deploy)
+  id-token: write    # mint OIDC tokens to authenticate the deployment origin
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   build_test:
@@ -48,11 +55,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-
-    # Grant GITHUB_TOKEN the permissions required to publish on GitHub Pages
-    permissions:
-      pages: write       # publish a Pages deployment
-      id-token: write    # mint OIDC tokens to authenticate the deployment origin
 
     # Don't deploy unless build_test has succeeded
     needs: build_test
