@@ -124,7 +124,7 @@ export function App() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         <div>
           <label htmlFor="nom">Nom</label>
           <input id="nom" name="nom" type="text" value={form.nom} onChange={handleChange} />

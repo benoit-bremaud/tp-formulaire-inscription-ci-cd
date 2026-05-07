@@ -20,6 +20,20 @@ function fillFormWithValidValues() {
   fireEvent.change(screen.getByLabelText('Code postal'), { target: { value: '06130' } });
 }
 
+/**
+ * Fills every field of the form with non-empty but invalid values so the
+ * submit button is enabled (no field is empty) but every validator rejects.
+ * Used to exercise the error-display path of the form.
+ */
+function fillFormWithInvalidValues() {
+  fireEvent.change(screen.getByLabelText('Nom'), { target: { value: 'Jean123' } });
+  fireEvent.change(screen.getByLabelText('Prénom'), { target: { value: 'Marie@' } });
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'plop' } });
+  fireEvent.change(screen.getByLabelText('Date de naissance'), { target: { value: '2020-01-01' } });
+  fireEvent.change(screen.getByLabelText('Ville'), { target: { value: 'Paris1' } });
+  fireEvent.change(screen.getByLabelText('Code postal'), { target: { value: '1234' } });
+}
+
 describe('happy path', () => {
   describe('App component', () => {
     test('renders all form fields with their labels', () => {
@@ -60,10 +74,38 @@ describe('happy path', () => {
 
 describe('sad path', () => {
   describe('App component', () => {
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
     test('submit button is disabled when the form is empty', () => {
       render(<App />);
 
       expect(screen.getByRole('button', { name: /s'inscrire/i })).toBeDisabled();
+    });
+
+    test('displays an error message under each field when the form is submitted with invalid values', () => {
+      // Freeze time so the under-18 birth date assertion is deterministic.
+      jest.useFakeTimers().setSystemTime(new Date('2026-05-07T00:00:00Z'));
+
+      render(<App />);
+      fillFormWithInvalidValues();
+      fireEvent.click(screen.getByRole('button', { name: /s'inscrire/i }));
+
+      const expectedErrors = [
+        'Nom invalide',
+        'Prénom invalide',
+        'Email invalide',
+        'Vous devez avoir au moins 18 ans',
+        'Ville invalide',
+        'Code postal invalide (5 chiffres attendus)',
+      ];
+
+      for (const message of expectedErrors) {
+        const errorElement = screen.getByText(message);
+        expect(errorElement).toBeInTheDocument();
+        expect(errorElement).toHaveClass('error');
+      }
     });
   });
 
