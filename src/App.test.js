@@ -4,6 +4,7 @@ import { App, validateForm } from './App';
 
 afterEach(() => {
   localStorage.clear();
+  jest.useRealTimers();
 });
 
 /**
@@ -54,6 +55,45 @@ describe('happy path', () => {
 
       expect(screen.getByRole('button', { name: /s'inscrire/i })).toBeEnabled();
     });
+
+    test('submitting a valid form shows toast, clears fields, lists the registrant, and persists to localStorage', () => {
+      // Freeze time so the isAdult check inside validateForm is deterministic.
+      jest.useFakeTimers().setSystemTime(new Date('2026-05-07T00:00:00Z'));
+
+      render(<App />);
+      fillFormWithValidValues();
+      fireEvent.click(screen.getByRole('button', { name: /s'inscrire/i }));
+
+      // 1) Toast is visible with the success message.
+      expect(screen.getByRole('alert')).toHaveTextContent(/inscription réussie/i);
+
+      // 2) Form fields are reset to empty.
+      expect(screen.getByLabelText('Nom')).toHaveValue('');
+      expect(screen.getByLabelText('Prénom')).toHaveValue('');
+      expect(screen.getByLabelText('Email')).toHaveValue('');
+      expect(screen.getByLabelText('Date de naissance')).toHaveValue('');
+      expect(screen.getByLabelText('Ville')).toHaveValue('');
+      expect(screen.getByLabelText('Code postal')).toHaveValue('');
+
+      // 3) The registrant is rendered in the list.
+      expect(screen.getByText(/Benoit Bremaud/)).toBeInTheDocument();
+      expect(screen.getByText(/benoit@example.com/)).toBeInTheDocument();
+      expect(screen.getByText(/Grasse/)).toBeInTheDocument();
+      expect(screen.getByText(/06130/)).toBeInTheDocument();
+
+      // 4) localStorage holds the persisted registrant with a generated id.
+      const stored = JSON.parse(localStorage.getItem('registrants'));
+      expect(stored).toHaveLength(1);
+      expect(stored[0]).toMatchObject({
+        nom: 'Bremaud',
+        prenom: 'Benoit',
+        email: 'benoit@example.com',
+        dateNaissance: '1981-05-22',
+        ville: 'Grasse',
+        codePostal: '06130',
+      });
+      expect(stored[0].id).toMatch(/^reg_/);
+    });
   });
 
   describe('validateForm', () => {
@@ -74,10 +114,6 @@ describe('happy path', () => {
 
 describe('sad path', () => {
   describe('App component', () => {
-    afterEach(() => {
-      jest.useRealTimers();
-    });
-
     test('submit button is disabled when the form is empty', () => {
       render(<App />);
 
@@ -110,10 +146,6 @@ describe('sad path', () => {
   });
 
   describe('validateForm', () => {
-    afterEach(() => {
-      jest.useRealTimers();
-    });
-
     test('returns errors for every field when the form is empty', () => {
       const emptyForm = {
         nom: '',
