@@ -11,6 +11,13 @@
 # production
 /build
 
+# generated documentation
+/docs
+/public/docs
+
+# local AI agent state (Claude Code)
+/.claude
+
 # misc
 .DS_Store
 .env.local
