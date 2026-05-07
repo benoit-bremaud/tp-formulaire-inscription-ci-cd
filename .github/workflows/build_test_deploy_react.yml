@@ -1,0 +1,64 @@
+name: Build, Test and Deploy React Application
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build_test:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Run the same job for every Node.js version listed in the matrix below
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: npm ci, build and test
+        run: |
+          npm ci
+          npm run build --if-present
+          npm test
+      # Detect GitHub Pages configuration and expose its settings as outputs for later steps
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+      # Package the build/ folder into a Pages-compatible artifact consumable by the deploy job
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build
+
+  # Deploy job — publishes the artifact uploaded above to the GitHub Pages environment
+  deploy:
+    # Link this job to the github-pages environment so the URL is tracked and clickable in the UI
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    # Grant GITHUB_TOKEN the permissions required to publish on GitHub Pages
+    permissions:
+      pages: write       # publish a Pages deployment
+      id-token: write    # mint OIDC tokens to authenticate the deployment origin
+
+    # Don't deploy unless build_test has succeeded
+    needs: build_test
+
+    # Download the Pages artifact and publish it on GitHub Pages
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
