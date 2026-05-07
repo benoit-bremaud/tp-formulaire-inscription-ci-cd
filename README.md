@@ -1,70 +1,70 @@
-# Getting Started with Create React App
+# TP Formulaire d'inscription CI/CD
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+[![Build](https://github.com/benoit-bremaud/tp-formulaire-inscription-ci-cd/actions/workflows/build_test_deploy_react.yml/badge.svg)](https://github.com/benoit-bremaud/tp-formulaire-inscription-ci-cd/actions/workflows/build_test_deploy_react.yml)
+[![codecov](https://codecov.io/gh/benoit-bremaud/tp-formulaire-inscription-ci-cd/graph/badge.svg)](https://codecov.io/gh/benoit-bremaud/tp-formulaire-inscription-ci-cd)
 
-## Available Scripts
+A React signup form built as a teaching project for the **Ynov M1 CI/CD**
+course. The repository demonstrates an end-to-end pipeline: Jest tests,
+coverage reporting to Codecov, JSDoc generation, and automated deployment to
+GitHub Pages via GitHub Actions.
 
-In the project directory, you can run:
+**Live demo**: <https://benoit-bremaud.github.io/tp-formulaire-inscription-ci-cd/>
 
-### `npm start`
+## Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- React 19 (Create React App)
+- Jest + Testing Library (unit and component tests)
+- JSDoc (generated documentation)
+- GitHub Actions (CI/CD)
+- Codecov (coverage tracking)
+- GitHub Pages (hosting)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Prerequisites
 
-### `npm test`
+- Node.js 20.x (LTS)
+- npm 10+
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Installation
 
-### `npm run build`
+```bash
+git clone git@github.com:benoit-bremaud/tp-formulaire-inscription-ci-cd.git
+cd tp-formulaire-inscription-ci-cd
+npm ci
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Available scripts
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+| Command | What it does |
+| --- | --- |
+| `npm start` | Run the dev server on <http://localhost:3000> |
+| `npm test` | Run the Jest test suite once with coverage report |
+| `npm run build` | Produce a production bundle in `build/` |
+| `npm run jsdoc` | Generate the technical documentation in `docs/` |
+| `npm run deploy` | Manually publish the build to GitHub Pages (legacy, CI handles this automatically) |
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## CI/CD pipeline
 
-### `npm run eject`
+Every push to `main` triggers the
+[`Build, Test and Deploy React Application`](.github/workflows/build_test_deploy_react.yml)
+workflow:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+1. **build_test**: installs dependencies, runs the build and the test suite,
+   uploads coverage to Codecov, and packages the build folder as a Pages artifact.
+2. **deploy**: runs only if `build_test` succeeds; publishes the artifact to
+   GitHub Pages.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+The deployment URL is exposed in the workflow run summary under the
+`github-pages` environment.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Project structure
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```text
+src/
+├── App.js              root component (signup form)
+├── validators.js       pure validation helpers (email, postal code, age, ...)
+├── validators.test.js  Jest unit tests for the validators
+└── ...
+.github/workflows/
+└── build_test_deploy_react.yml  CI/CD pipeline
+jsdoc.config.json       JSDoc generator configuration
+```
