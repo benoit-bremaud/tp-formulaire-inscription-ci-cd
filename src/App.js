@@ -85,6 +85,9 @@ export function App() {
   const [errors, setErrors] = useState({});
   const [toastVisible, setToastVisible] = useState(false);
   const [errorToastVisible, setErrorToastVisible] = useState(false);
+  // Bumped on every invalid submit so the auto-hide timer restarts even when
+  // the error toast is already visible (repeated invalid submits within 3s).
+  const [errorToastNonce, setErrorToastNonce] = useState(0);
   const [registrants, setRegistrants] = useState(loadRegistrants);
 
   useEffect(() => {
@@ -97,7 +100,7 @@ export function App() {
     if (!errorToastVisible) return undefined;
     const timerId = setTimeout(() => setErrorToastVisible(false), TOAST_DURATION_MS);
     return () => clearTimeout(timerId);
-  }, [errorToastVisible]);
+  }, [errorToastVisible, errorToastNonce]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -120,6 +123,7 @@ export function App() {
     } else {
       setToastVisible(false);
       setErrorToastVisible(true);
+      setErrorToastNonce((n) => n + 1);
     }
   };
 
