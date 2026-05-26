@@ -9,12 +9,11 @@ Ordre antéchronologique (le plus récent en haut).
 
 ---
 
-## 2026-05-26 — SemVer & publication npm (en cours, branche `feat/npm-publish`)
+## 2026-05-26 — SemVer & publication npm
 
-Travail en cours, **non encore mergé** : application du cours « Intégration
-déploiement — Semantic versioning » au projet (ajout de la publication du
-package sur le registre npm public via la CI existante). Les SHA et le numéro de
-PR seront ajoutés au moment du merge.
+Application du cours « Intégration déploiement — Semantic versioning » : ajout du
+versioning SemVer et de la publication du package sur le registre npm public, via
+le pipeline CI existant. Livré par les PR #7 et #8 (détails ci-dessous).
 
 - **Décisions** :
   - `Même dépôt` — la publication npm est ajoutée au repo existant plutôt que
@@ -32,7 +31,7 @@ PR seront ajoutés au moment du merge.
     `babel.config.js` (pas de plugin JSX redondant).
   - `Compte npm` — publication sous le compte npm `beniot` ; le token sera fourni
     en secret GitHub `NPM_TOKEN` (non versionné).
-- **Étapes réalisées sur la branche** :
+- **Contenu livré — PR #7 mergée** (`76b8bb0`, squash de `feat/npm-publish`) :
   - Métadonnées de publication dans `package.json` (`description`, `author`,
     `license: MIT`, `repository`, `keywords`, `main: dist/index.js`).
   - Script `build-npm` (`rm -rf dist && npx babel src --out-dir dist
@@ -48,8 +47,25 @@ PR seront ajoutés au moment du merge.
     `npm version patch` (+ `[skip ci]`), `npm publish`, push du bump sur `main`
     (`contents: write`). Corrige le snippet du cours (double commit bugué retiré,
     auth registre ajoutée, garde-fou anti-boucle).
-- **Reste à faire** : vérification de bout en bout, README, puis PR.
-  Prérequis : secret `NPM_TOKEN` sur le repo GitHub.
+- **Revue PR #7** (Copilot, 2 tours, 15 commentaires) : 5 corrigés (LICENSE MIT,
+  `concurrency` sur le job publish, doc SemVer, 2 typos), 3 défères justifiés
+  (effet de bord de l'entry-point = choix conforme au cours ; `rm -rf` = cible
+  Linux/CI ; react en `dependencies` = artefact pédagogique, pas
+  `peerDependencies`).
+- **PR #8 mergée** (`906200e`, squash de `ci/manual-publish-trigger`) — *ci:
+  allow manual publish via workflow_dispatch*. Le squash-merge de #7 n'avait pas
+  émis d'event `push` re-déclenchant le workflow → le job `publish` ne tournait
+  jamais. Ajout du trigger `workflow_dispatch` + condition `publish` étendue
+  (`push || workflow_dispatch`), avec garde `github.ref == 'refs/heads/main'`
+  (`083886e`) suite à une revue P1 Copilot + Codex (interdire la publication
+  hors `main`).
+- **Mise en service de la publication** : token npm **Automation** (compte
+  `beniot`) enregistré en secret GitHub `NPM_TOKEN`. Premier essai bloqué en
+  `E403` (token initial insuffisant), résolu en régénérant un Classic Automation.
+  1ʳᵉ publication déclenchée via push sur `main` (l'API `workflow_dispatch`
+  renvoyait `HTTP 500` — incident GitHub Actions `degraded_performance` ce
+  jour-là) : le job `publish` exécute `npm version patch` (0.1.0 → 0.1.1) puis
+  `npm publish`.
 
 ---
 
