@@ -75,3 +75,40 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  # Publish job — bump the version (SemVer) and publish the package to npm.
+  # Runs only on push to main, after the build/test job has succeeded.
+  publish:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    # Don't publish unless build_test has succeeded
+    needs: build_test
+
+    # Allow this job to push the version-bump commit back to main
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+      # setup-node with registry-url writes an .npmrc that reads NODE_AUTH_TOKEN,
+      # which is what authenticates `npm publish` against the registry.
+      - name: Use Node.js 20.x with the npm registry configured
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          registry-url: 'https://registry.npmjs.org'
+      - name: Build, bump version and publish to npm
+        run: |
+          git config user.name "benoit-bremaud"
+          git config user.email "benoit.bremaud@ynov.com"
+          npm ci
+          npm run build-npm
+          # npm version creates the bump commit AND a git tag; [skip ci] keeps the
+          # push from re-triggering this workflow.
+          npm version patch -m "chore(release): %s [skip ci]"
+          npm publish
+          # Push the bump commit and its tag back to main so the version persists.
+          git push origin HEAD:main --follow-tags
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
