@@ -12,7 +12,7 @@ Ordre antéchronologique (le plus récent en haut).
 ## 2026-05-26 — SemVer & publication npm (en cours, branche `feat/npm-publish`)
 
 Travail en cours, **non encore mergé** : application du cours « Intégration
-déploiement — Semantic versionning » au projet (ajout de la publication du
+déploiement — Semantic versioning » au projet (ajout de la publication du
 package sur le registre npm public via la CI existante). Les SHA et le numéro de
 PR seront ajoutés au moment du merge.
 

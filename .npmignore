@@ -1,4 +1,4 @@
-# .npmignore — limit the published package to the strict necessary.
+# .npmignore — limit the published package to the strictly necessary.
 # NOTE: once this file exists, npm ignores .gitignore entirely, so anything
 # that must stay out of the tarball has to be listed here too.
 # (node_modules is always excluded by npm regardless of this file.)

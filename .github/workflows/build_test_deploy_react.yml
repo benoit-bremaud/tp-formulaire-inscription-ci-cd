@@ -82,6 +82,12 @@ jobs:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
+    # Serialize publish runs so two close pushes cannot race on the version bump
+    # (both computing the same next version and one failing to publish).
+    concurrency:
+      group: publish-npm
+      cancel-in-progress: false
+
     # Don't publish unless build_test has succeeded
     needs: build_test
 
