@@ -54,7 +54,9 @@ describe('happy path', () => {
 
       const docLink = screen.getByRole('link', { name: /documentation/i });
       expect(docLink).toBeInTheDocument();
-      expect(docLink).toHaveAttribute('href', expect.stringContaining('/docs/'));
+      // PUBLIC_URL is '' in the test environment, so the href resolves to the
+      // exact docs path — this also guards against an `undefined/docs/...` value.
+      expect(docLink).toHaveAttribute('href', '/docs/index.html');
     });
 
     test('submit button becomes enabled once every field is filled', () => {

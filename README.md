@@ -84,13 +84,12 @@ Versions follow [Semantic Versioning](https://semver.org/) — `MAJOR.MINOR.PATC
 - **MINOR**: backward-compatible feature.
 - **PATCH**: backward-compatible bug fix.
 
-The CI bumps the **patch** number automatically on every push to `main`
-(`npm version patch`) and publishes the result. This automated flow therefore
-only produces patch releases. Minor and major releases are intentionally out of
-scope for this teaching project: they would require a dedicated release process
-(e.g. a manual `npm version minor`/`major` performed outside this auto-patch
-job, or a tag-driven workflow) so the automatic patch bump does not override the
-intended version.
+The CI bumps the version and publishes on every push to `main` — the default
+bump is **patch** (`npm version patch`). Minor and major releases are produced
+on demand: run the workflow manually from the **Actions** tab ("Run workflow")
+and set the `release_type` input to `minor` or `major`. The chosen level is
+applied automatically by the pipeline (`npm version <release_type>` + `npm
+publish`).
 
 ## Project structure
 
