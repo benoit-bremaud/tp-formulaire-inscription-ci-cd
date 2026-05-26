@@ -1,0 +1,26 @@
+# .npmignore — limit the published package to the strictly necessary.
+# NOTE: once this file exists, npm ignores .gitignore entirely, so anything
+# that must stay out of the tarball has to be listed here too.
+# (node_modules is always excluded by npm regardless of this file.)
+
+# Raw sources — only the compiled dist/ is shipped
+/src
+/public
+/.github
+
+# Build & doc tooling, not needed by package consumers
+babel.config.js
+jsdoc.config.json
+/coverage
+/build
+/docs
+
+# Tests and test setup that also land in dist/
+*.test.js
+setupTests.js
+
+# Local state / secrets that .gitignore used to cover (npm ignores .gitignore
+# once a .npmignore exists, so they must be repeated here)
+/.claude
+.env
+.env.*

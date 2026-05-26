@@ -15,3 +15,7 @@ root.render(
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
+
+// Re-export the main component so it is available to consumers of the
+// published npm package (entry point declared as "main" in package.json).
+export { App };

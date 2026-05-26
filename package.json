@@ -1,7 +1,21 @@
 {
   "name": "tp-formulaire-inscription-ci-cd",
   "version": "0.1.0",
-  "private": true,
+  "description": "Formulaire d'inscription React (TP CI/CD Ynov) — pipeline build, test, couverture, publication npm.",
+  "author": "Benoît Bremaud <benoit.bremaud@ynov.com>",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benoit-bremaud/tp-formulaire-inscription-ci-cd.git"
+  },
+  "keywords": [
+    "react",
+    "ci-cd",
+    "semver",
+    "ynov",
+    "formulaire"
+  ],
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -19,7 +33,8 @@
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "jsdoc": "jsdoc -R ./README.md -c ./jsdoc.config.json -r -d ./public/docs"
+    "jsdoc": "jsdoc -R ./README.md -c ./jsdoc.config.json -r -d ./public/docs",
+    "build-npm": "rm -rf dist && npx babel src --out-dir dist --copy-files"
   },
   "homepage": "https://benoit-bremaud.github.io/tp-formulaire-inscription-ci-cd/",
   "eslintConfig": {
@@ -41,6 +56,8 @@
     ]
   },
   "devDependencies": {
+    "@babel/cli": "^7.29.7",
+    "@babel/core": "^7.29.7",
     "gh-pages": "^6.3.0",
     "jsdoc": "^4.0.5",
     "react-test-renderer": "^19.2.5"
