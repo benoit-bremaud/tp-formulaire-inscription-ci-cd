@@ -178,6 +178,16 @@ export function App() {
           ))}
         </ul>
       )}
+
+      <footer className="app-footer">
+        <a
+          href={`${process.env.PUBLIC_URL}/docs/index.html`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Documentation
+        </a>
+      </footer>
     </div>
   );
 }

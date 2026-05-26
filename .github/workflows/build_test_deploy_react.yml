@@ -9,7 +9,17 @@ on:
     branches: [ main ]
   # Allow publishing on demand from the Actions tab (and as a reliable trigger
   # when a PR merge does not emit a push event that re-runs workflows).
+  # The release_type input selects the SemVer bump for the npm release.
   workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'SemVer bump for the npm release'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
 
 # Permissions inherited by all jobs — required for the GitHub Pages deployment chain
 permissions:
@@ -116,10 +126,12 @@ jobs:
           npm ci
           npm run build-npm
           # npm version creates the bump commit AND a git tag; [skip ci] keeps the
-          # push from re-triggering this workflow.
-          npm version patch -m "chore(release): %s [skip ci]"
+          # push from re-triggering this workflow. RELEASE_TYPE defaults to patch
+          # (a plain push to main) and is overridable via workflow_dispatch.
+          npm version "$RELEASE_TYPE" -m "chore(release): %s [skip ci]"
           npm publish
           # Push the bump commit and its tag back to main so the version persists.
           git push origin HEAD:main --follow-tags
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          RELEASE_TYPE: ${{ github.event.inputs.release_type || 'patch' }}

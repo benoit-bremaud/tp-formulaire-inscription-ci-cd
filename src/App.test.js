@@ -49,6 +49,14 @@ describe('happy path', () => {
       expect(screen.getByRole('button', { name: /s'inscrire/i })).toBeInTheDocument();
     });
 
+    test('exposes a link to the documentation', () => {
+      render(<App />);
+
+      const docLink = screen.getByRole('link', { name: /documentation/i });
+      expect(docLink).toBeInTheDocument();
+      expect(docLink).toHaveAttribute('href', expect.stringContaining('/docs/'));
+    });
+
     test('submit button becomes enabled once every field is filled', () => {
       render(<App />);
       fillFormWithValidValues();
