@@ -84,6 +84,7 @@ export function App() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [toastVisible, setToastVisible] = useState(false);
+  const [errorToastVisible, setErrorToastVisible] = useState(false);
   const [registrants, setRegistrants] = useState(loadRegistrants);
 
   useEffect(() => {
@@ -91,6 +92,12 @@ export function App() {
     const timerId = setTimeout(() => setToastVisible(false), TOAST_DURATION_MS);
     return () => clearTimeout(timerId);
   }, [toastVisible]);
+
+  useEffect(() => {
+    if (!errorToastVisible) return undefined;
+    const timerId = setTimeout(() => setErrorToastVisible(false), TOAST_DURATION_MS);
+    return () => clearTimeout(timerId);
+  }, [errorToastVisible]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -108,7 +115,11 @@ export function App() {
       setRegistrants(updated);
       saveRegistrants(updated);
       setForm(EMPTY_FORM);
+      setErrorToastVisible(false);
       setToastVisible(true);
+    } else {
+      setToastVisible(false);
+      setErrorToastVisible(true);
     }
   };
 
@@ -121,6 +132,12 @@ export function App() {
       {toastVisible && (
         <div role="alert" className="toast">
           Inscription réussie !
+        </div>
+      )}
+
+      {errorToastVisible && (
+        <div role="alert" className="toast toast--error">
+          Le formulaire contient des erreurs.
         </div>
       )}
 

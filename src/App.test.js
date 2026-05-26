@@ -176,6 +176,26 @@ describe('sad path', () => {
         expect(errorElement).toHaveClass('error');
       }
     });
+
+    test('shows an error toast on invalid submit and hides it after the duration', () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-05-07T00:00:00Z'));
+
+      render(<App />);
+      fillFormWithInvalidValues();
+      fireEvent.click(screen.getByRole('button', { name: /s'inscrire/i }));
+
+      // An error toast is shown (in red) alongside the per-field errors.
+      const toast = screen.getByRole('alert');
+      expect(toast).toHaveTextContent(/le formulaire contient des erreurs/i);
+      expect(toast).toHaveClass('toast--error');
+      expect(screen.getByText('Nom invalide')).toHaveClass('error');
+
+      // The error toast auto-hides after the configured duration.
+      act(() => {
+        jest.advanceTimersByTime(3000);
+      });
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
   });
 
   describe('validateForm', () => {
