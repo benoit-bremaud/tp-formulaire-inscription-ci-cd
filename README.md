@@ -69,11 +69,11 @@ secret (an npm **Automation** access token).
 The compiled component is published to the public npm registry:
 
 ```bash
-npm install tp-formulaire-inscription-ci-cd
+npm install @beniot/tp-formulaire-inscription-ci-cd
 ```
 
 ```jsx
-import { App } from 'tp-formulaire-inscription-ci-cd';
+import { App } from '@beniot/tp-formulaire-inscription-ci-cd';
 ```
 
 ### Versioning (SemVer)
