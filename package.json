@@ -1,6 +1,6 @@
 {
   "name": "@beniot/tp-formulaire-inscription-ci-cd",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Formulaire d'inscription React (TP CI/CD Ynov) — pipeline build, test, couverture, publication npm.",
   "author": "Benoît Bremaud <benoit.bremaud@ynov.com>",
   "license": "MIT",
