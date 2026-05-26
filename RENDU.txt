@@ -1,0 +1,14 @@
+Rendu - Exercice Semantic Versioning (Ynov M1 CI/CD)
+Auteur : Benoit Bremaud
+
+Repository GitHub (public) :
+https://github.com/benoit-bremaud/tp-formulaire-inscription-ci-cd
+
+Projet deploye (GitHub Pages) :
+https://benoit-bremaud.github.io/tp-formulaire-inscription-ci-cd/
+
+Package npm (public) :
+https://www.npmjs.com/package/@beniot/tp-formulaire-inscription-ci-cd
+
+Rapport de couverture (Codecov, public) :
+https://codecov.io/gh/benoit-bremaud/tp-formulaire-inscription-ci-cd

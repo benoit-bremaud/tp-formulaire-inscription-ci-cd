@@ -11,6 +11,22 @@ Actions.
 
 **Live demo**: <https://benoit-bremaud.github.io/tp-formulaire-inscription-ci-cd/>
 
+## Features
+
+- **Registration form** with six fields — nom, prénom, email, date de naissance,
+  ville, code postal — plus a submit button.
+- The **submit button is disabled** until every field is filled.
+- **Valid submit**: the entry is saved to `localStorage`, a **success toast** is
+  shown, and the form is cleared.
+- **Invalid submit**: an **error toast** is shown and a red error message appears
+  under each invalid field.
+- **Validation rules** (`src/validators.js`, 100% tested):
+  - **Age** — the date of birth must be at least 18 years old.
+  - **Postal code** — French format (exactly 5 digits).
+  - **Name / first name** — letters only; accents, diaeresis, hyphen and
+    apostrophe allowed; no digits or special characters.
+  - **Email** — valid email format.
+
 ## Stack
 
 - React 19 (Create React App)
@@ -56,13 +72,14 @@ workflow:
 2. **deploy**: runs only if `build_test` succeeds; publishes the artifact to
    GitHub Pages.
 3. **publish**: runs only if `build_test` succeeds; transpiles `src/` to `dist/`,
-   bumps the patch version (`npm version patch`), and publishes the package to
-   the npm registry. The version bump is committed back to `main` with a
-   `[skip ci]` marker so it does not re-trigger the pipeline.
+   bumps the version (`npm version <release_type>`, **patch** by default), and
+   publishes the package to the npm registry. The version bump is committed back
+   to `main` with a `[skip ci]` marker so it does not re-trigger the pipeline.
 
 The deployment URL is exposed in the workflow run summary under the
 `github-pages` environment. Publishing requires the `NPM_TOKEN` repository
-secret (an npm **Automation** access token).
+secret — an npm access token with write access to the package's scope (here a
+granular token scoped to `@beniot`).
 
 ## Use as an npm package
 

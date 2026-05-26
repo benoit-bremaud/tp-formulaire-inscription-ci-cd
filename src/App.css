@@ -56,3 +56,8 @@
   font-weight: bold;
 }
 
+/* Error variant: overrides the green background with red. */
+.toast--error {
+  background-color: #f44336;
+}
+
