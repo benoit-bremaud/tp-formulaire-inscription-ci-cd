@@ -82,7 +82,9 @@ jobs:
   # Publish job — bump the version (SemVer) and publish the package to npm.
   # Runs only on push to main, after the build/test job has succeeded.
   publish:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    # Only ever publish from main — the job pushes HEAD:main, so a manual
+    # dispatch from another branch must not run.
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
 
     # Serialize publish runs so two close pushes cannot race on the version bump
