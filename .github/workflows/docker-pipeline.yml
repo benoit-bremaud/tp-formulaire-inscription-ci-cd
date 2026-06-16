@@ -36,7 +36,7 @@ jobs:
   # Build et push des images front et back sur Docker Hub (uniquement si test-docker passe).
   build-docker:
     needs: test-docker
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     defaults:
       run:
