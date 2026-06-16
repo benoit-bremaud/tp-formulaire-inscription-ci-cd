@@ -1,0 +1,83 @@
+# docker-compose.yml
+# Orchestre 3 conteneurs :
+#  - db      : MySQL 9.7 (build depuis ./Dockerfile), scripts SQL montes en volume, avec healthcheck
+#  - api     : API Python FastAPI (build depuis ./api/Dockerfile), attend que db soit SAIN
+#  - adminer : interface web (type phpMyAdmin) pour gerer la base au navigateur
+# Le mot de passe est lu automatiquement depuis le fichier .env (substitution ${...}).
+
+services:
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ./sqlfiles:/docker-entrypoint-initdb.d
+    healthcheck:
+      # $$ : on echappe le $ pour que la variable soit resolue DANS le conteneur,
+      # pas par Compose. CMD-SHELL car on utilise une variable et ||.
+      test: ["CMD-SHELL", "mysql -uroot -p$$MYSQL_ROOT_PASSWORD -e 'SHOW DATABASES;' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  api:
+    build:
+      context: ./api
+    restart: always
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_DATABASE=ynov_ci
+      - MYSQL_USER=root
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "8000:8000"
+    healthcheck:
+      # Slide 56 : verifier un code HTTP precis. curl -w '%{http_code}' renvoie
+      # uniquement le code de la reponse ; grep -q 200 reussit (exit 0) si c'est 200.
+      # CMD-SHELL car on utilise un pipe.
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/docs | grep -q 200"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    depends_on:
+      db:
+        condition: service_healthy   # attend que db soit SAIN, pas juste demarre
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    healthcheck:
+      # adminer = image PHP/Alpine : pas de curl, mais wget (busybox) est present.
+      # On verifie que le serveur web repond bien sur le port 8080.
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8080/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  webapp:
+    build:
+      context: ./webapp
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_SERVER_PORT=8000
+    volumes:
+      - ./webapp:/app
+      - /app/node_modules
+    depends_on:
+      - api
+    command: npm start
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
