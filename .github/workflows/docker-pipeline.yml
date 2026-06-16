@@ -1,0 +1,61 @@
+name: Docker Pipeline
+
+# Ne se declenche que si le TP Docker change (evite les runs inutiles).
+on:
+  push:
+    paths: ['docker-mysql/**', '.github/workflows/docker-pipeline.yml']
+  pull_request:
+    paths: ['docker-mysql/**', '.github/workflows/docker-pipeline.yml']
+
+jobs:
+  # Lance la stack et verifie que les 4 conteneurs sont healthy.
+  test-docker:
+    runs-on: ubuntu-latest
+    env:
+      MYSQL_ROOT_PASSWORD: ci-test-password
+    defaults:
+      run:
+        working-directory: docker-mysql
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Up and wait until healthy
+        run: docker compose up -d --build --wait
+
+      - name: List containers
+        run: docker compose ps
+
+      - name: Check the 4 containers are healthy
+        run: |
+          for c in docker-mysql-db-1 docker-mysql-api-1 docker-mysql-adminer-1 docker-mysql-webapp-1; do
+            health=$(docker inspect --format '{{json .State.Health.Status}}' "$c")
+            echo "$c -> $health"
+            echo "$health" | jq -e '. == "healthy"' > /dev/null
+          done
+
+  # Build et push des images front et back sur Docker Hub (uniquement si test-docker passe).
+  build-docker:
+    needs: test-docker
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docker-mysql
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push backend (api)
+        run: |
+          docker build -t beniot/ynov-ci-backend:latest ./api
+          docker push beniot/ynov-ci-backend:latest
+
+      - name: Build and push frontend (webapp)
+        run: |
+          docker build -t beniot/ynov-ci-frontend:latest ./webapp
+          docker push beniot/ynov-ci-frontend:latest
