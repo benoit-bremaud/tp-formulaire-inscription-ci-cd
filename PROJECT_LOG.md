@@ -9,6 +9,79 @@ Ordre antéchronologique (le plus récent en haut).
 
 ---
 
+## 2026-06-17 — Tests E2E Cypress, intégration API mockée & corrections TP
+
+Grosse journée : tests de bout en bout, bascule du `localStorage` vers une API
+tierce testée par mocks, puis corrections issues du retour de notation du TP.
+
+- **PR #12 mergée** (`1345de1`, squash de `feat/cypress-e2e`) — *test(e2e): add
+  Cypress end-to-end tests*. Cypress installé (scripts `cypress:open` /
+  `cypress:run`), `cypress.config.js` (`baseUrl`, `allowCypressEnv: false`),
+  3 specs dans `cypress/e2e/inscription.cy.js` (page d'accueil, soumission valide
+  = +1 inscrit, soumission invalide = aucun ajout) + workflow
+  `.github/workflows/e2e-cypress.yml` (`cypress-io/github-action@v6`). Aucune
+  modif du code applicatif. → release **0.2.3** (`652199e`).
+- **PR #13 mergée** (`bf42c04`, squash de `feat/integration-mocks`) — *feat(app):
+  consume a third-party API with mocked integration tests*. Bascule du
+  `localStorage` vers une API tierce : appels isolés dans `src/api.js`
+  (`fetchRegistrants` / `createRegistrant`, axios), config env Jest via
+  `.jest/setEnvVars.js` + `transformIgnorePatterns` pour axios, `src/api.test.js`
+  (mocks axios succès/erreur, GET/POST), `App.js` migré (compteur au montage, POST
+  au submit, gestion d'erreur réseau), e2e Cypress adaptés avec `cy.intercept`,
+  `REACT_APP_API_URL` (jsonplaceholder) dans `.env.{development,production,example}`.
+  31 tests, 100 % de couverture. → release **0.2.4** (`27b7e6e`).
+- **PR #14 mergée** (`1765b04`, squash de `fix/formulaire-date-aberrante-jsdoc`) —
+  *fix(formulaire): reject aberrant birth dates and document App component*.
+  Corrige deux points du retour de notation (UT 4,5/5, doc 4/5) :
+  - Borne d'âge supérieure : nouveau `isPlausibleBirthDate` (âge dans
+    `[MIN_AGE=18, MAX_AGE=120]`) remplace `isAdult` dans `validateForm` → une date
+    aberrante type `0001-01-01` (âge calculé > 2000) est désormais rejetée ; le
+    bloc de tests `edge cases` (jusque-là vide) est rempli (0001-01-01, date
+    future, bornes 18/120).
+  - JSDoc ajoutée au composant `App` et aux constantes `EMPTY_FORM` /
+    `ERROR_MESSAGES`, pour que la doc générée couvre le composant principal (les
+    `validators.js` étaient déjà documentés).
+  - Nettoyage Sonar : `TypeError` + `Number.isNaN` dans `calculateAge`.
+  38 tests, 100 % de couverture. → release patch **0.2.5** *en attente* :
+  déclenchée par le job `publish` sur le merge `1765b04` ; le commit
+  `chore(release): 0.2.5` et le tag `v0.2.5` seront ajoutés ici une fois publiés.
+
+---
+
+## 2026-06-16 — Conteneurisation Docker & pipeline CI
+
+- **PR #11 mergée** (`e649fcb`, squash de `feat/docker-compose-stack`) —
+  *feat(docker): docker-compose stack + CI pipeline*. TP Docker sous
+  `docker-mysql/` : `docker-compose.yml` (MySQL seedé par scripts SQL init,
+  backend FastAPI, Adminer, frontend React) avec healthchecks sur les 4 services
+  et `depends_on: condition: service_healthy`. Workflow
+  `.github/workflows/docker-pipeline.yml` : `test-docker` (`docker compose up -d
+  --build --wait` + assertions `docker inspect ... | jq -e`) et `build-docker`
+  (publication `beniot/ynov-ci-backend:latest` et `beniot/ynov-ci-frontend:latest`
+  sur Docker Hub, sur push uniquement, `needs: test-docker`). `.env` gitignored,
+  `.env.example` versionné. Limitation connue : image frontend orientée dev (code
+  monté en volume, pas de `CMD`) — build/push OK mais pas exécutable seule (image
+  prod multi-stage + nginx = suite). → release **0.2.2** (`f4af02c`).
+
+---
+
+## 2026-05-26 (suite) — Lien doc in-app, niveau de release & toast d'erreur
+
+- **PR #9 mergée** (`0971027`, squash de `feat/release-level-and-docs-link`) —
+  *feat: in-app docs link and selectable release type*. (1) Lien footer vers la
+  doc publiée (`/docs`, site JSDoc dont la home est le README), couvert par un
+  test ; (2) input `workflow_dispatch` `release_type` (patch/minor/major, défaut
+  patch) pour publier aussi des releases minor/major (un simple push `main` reste
+  un patch). → releases **0.1.1** (`736073b`) puis **0.2.0** (`eebfa09`, 1er bump
+  minor via le nouveau `release_type`).
+- **PR #10 mergée** (`75f83fc`, squash de `feat/error-toast`) — *feat(app): error
+  toast on invalid submit*. Toast d'erreur rouge (`toast--error`, `role=alert`,
+  auto-hide `TOAST_DURATION_MS`) au submit invalide, exclusif du toast de succès,
+  exigé par le sujet ; variante CSS + test dédié. 27 tests, 100 % de couverture.
+  → release **0.2.1** (`4ebb960`).
+
+---
+
 ## 2026-05-26 — SemVer & publication npm
 
 Application du cours « Intégration déploiement — Semantic versioning » : ajout du
