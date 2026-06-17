@@ -43,6 +43,11 @@
     "cypress:run": "cypress run"
   },
   "homepage": "https://benoit-bremaud.github.io/tp-formulaire-inscription-ci-cd/",
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_modules/(?!axios)/"
+    ]
+  },
   "eslintConfig": {
     "extends": [
       "react-app",
