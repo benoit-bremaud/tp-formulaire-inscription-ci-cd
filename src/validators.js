@@ -4,12 +4,12 @@
  * @returns {number} The age in full years.
  */
 export function calculateAge(birthDate) {
-    if (!(birthDate instanceof Date)) {
-        throw new Error('birthDate must be a Date');
-    }
-    if (isNaN(birthDate.getTime())) {
-        throw new Error('birthDate is invalid');
-    }
+  if (!(birthDate instanceof Date)) {
+    throw new TypeError('birthDate must be a Date');
+  }
+  if (Number.isNaN(birthDate.getTime())) {
+    throw new TypeError('birthDate is invalid');
+  }
   const today = new Date();
   let age = today.getUTCFullYear() - birthDate.getUTCFullYear();
   const monthDiff = today.getUTCMonth() - birthDate.getUTCMonth();
@@ -27,6 +27,32 @@ export function calculateAge(birthDate) {
  */
 export function isAdult(birthDate) {
   return calculateAge(birthDate) >= 18;
+}
+
+/**
+ * Minimum legal age accepted by the registration form.
+ * @type {number}
+ */
+export const MIN_AGE = 18;
+
+/**
+ * Maximum plausible human age. Guards against aberrant birth dates such as
+ * 0001-01-01, whose computed age (~2000+) would otherwise pass the adult check.
+ * @type {number}
+ */
+export const MAX_AGE = 120;
+
+/**
+ * Checks if a birth date is plausible: the resulting age must be within
+ * [MIN_AGE, MAX_AGE]. Rejects aberrant dates (e.g. 0001-01-01) and future
+ * dates while delegating input validation to calculateAge.
+ * @param {Date} birthDate - The birth date as a JavaScript Date object.
+ * @returns {boolean} True if the age is between MIN_AGE and MAX_AGE inclusive.
+ * @throws {Error} Delegates input validation to calculateAge.
+ */
+export function isPlausibleBirthDate(birthDate) {
+  const age = calculateAge(birthDate);
+  return age >= MIN_AGE && age <= MAX_AGE;
 }
 
 /**

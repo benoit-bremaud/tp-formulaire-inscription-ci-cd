@@ -3,8 +3,12 @@ import './App.css';
 import { useEffect, useState } from 'react';
 
 import { createRegistrant, fetchRegistrants } from './api';
-import { isAdult, isValidEmail, isValidName, isValidPostalCode } from './validators';
+import { isPlausibleBirthDate, isValidEmail, isValidName, isValidPostalCode } from './validators';
 
+/**
+ * Initial (empty) form state, also used to reset the form after a successful submit.
+ * @type {object}
+ */
 export const EMPTY_FORM = {
   nom: '',
   prenom: '',
@@ -14,6 +18,10 @@ export const EMPTY_FORM = {
   codePostal: '',
 };
 
+/**
+ * User-facing validation error messages keyed by field name.
+ * @type {object}
+ */
 export const ERROR_MESSAGES = {
   nom: 'Nom invalide',
   prenom: 'Prénom invalide',
@@ -43,7 +51,7 @@ export function validateForm(form) {
   if (!isValidEmail(form.email)) {
     errors.email = ERROR_MESSAGES.email;
   }
-  if (!form.dateNaissance || !isAdult(new Date(form.dateNaissance))) {
+  if (!form.dateNaissance || !isPlausibleBirthDate(new Date(form.dateNaissance))) {
     errors.dateNaissance = ERROR_MESSAGES.dateNaissance;
   }
   if (!isValidName(form.ville)) {
@@ -55,6 +63,21 @@ export function validateForm(form) {
   return errors;
 }
 
+/**
+ * Registration form screen.
+ *
+ * Renders a controlled form (nom, prénom, email, date de naissance, ville, code
+ * postal), validates it client-side via {@link validateForm}, and persists a new
+ * registrant through the API ({@link createRegistrant}). On mount it loads the
+ * current registrant count with {@link fetchRegistrants}.
+ *
+ * Feedback is shown with auto-hiding toasts: a success toast after a valid
+ * submit, and an error toast on validation failure or network error. The submit
+ * button stays disabled until every field is filled.
+ *
+ * @component
+ * @returns {JSX.Element} The registration form UI.
+ */
 export function App() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
