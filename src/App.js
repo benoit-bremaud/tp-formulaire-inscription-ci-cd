@@ -2,6 +2,7 @@ import './App.css';
 
 import { useEffect, useState } from 'react';
 
+import { createRegistrant, fetchRegistrants } from './api';
 import { isAdult, isValidEmail, isValidName, isValidPostalCode } from './validators';
 
 export const EMPTY_FORM = {
@@ -23,7 +24,8 @@ export const ERROR_MESSAGES = {
 };
 
 const TOAST_DURATION_MS = 3000;
-const STORAGE_KEY = 'registrants';
+const VALIDATION_ERROR = 'Le formulaire contient des erreurs.';
+const NETWORK_ERROR = 'Erreur reseau, reessayez plus tard.';
 
 /**
  * Validates a registration form and returns an errors object.
@@ -53,77 +55,66 @@ export function validateForm(form) {
   return errors;
 }
 
-function loadRegistrants() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return [];
-    const parsed = JSON.parse(saved);
-    // Backfill ids for records persisted before id was introduced so that
-    // list keys remain unique and stable across renders.
-    return parsed.map((registrant) =>
-      registrant.id ? registrant : { ...registrant, id: generateId() }
-    );
-  } catch {
-    return [];
-  }
-}
-
-function saveRegistrants(registrants) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(registrants));
-  } catch {
-    // localStorage unavailable (quota, private mode); silently ignore
-  }
-}
-
-function generateId() {
-  return `reg_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
-}
-
 export function App() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
-  const [toastVisible, setToastVisible] = useState(false);
-  const [errorToastVisible, setErrorToastVisible] = useState(false);
-  // Bumped on every invalid submit so the auto-hide timer restarts even when
-  // the error toast is already visible (repeated invalid submits within 3s).
-  const [errorToastNonce, setErrorToastNonce] = useState(0);
-  const [registrants, setRegistrants] = useState(loadRegistrants);
+  const [count, setCount] = useState(0);
+  const [successVisible, setSuccessVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+  // Bumped on every error so the auto-hide timer restarts even when the error
+  // toast is already visible (repeated failing submits within the duration).
+  const [errorNonce, setErrorNonce] = useState(0);
+
+  // Charge le nombre d'inscrits depuis l'API au montage.
+  useEffect(() => {
+    fetchRegistrants()
+      .then((registrants) => setCount(registrants.length))
+      .catch(() => {
+        // Erreur reseau au chargement : on garde le compteur a 0.
+      });
+  }, []);
 
   useEffect(() => {
-    if (!toastVisible) return undefined;
-    const timerId = setTimeout(() => setToastVisible(false), TOAST_DURATION_MS);
+    if (!successVisible) return undefined;
+    const timerId = setTimeout(() => setSuccessVisible(false), TOAST_DURATION_MS);
     return () => clearTimeout(timerId);
-  }, [toastVisible]);
+  }, [successVisible]);
 
   useEffect(() => {
-    if (!errorToastVisible) return undefined;
-    const timerId = setTimeout(() => setErrorToastVisible(false), TOAST_DURATION_MS);
+    if (!errorMessage) return undefined;
+    const timerId = setTimeout(() => setErrorMessage(null), TOAST_DURATION_MS);
     return () => clearTimeout(timerId);
-  }, [errorToastVisible, errorToastNonce]);
+  }, [errorMessage, errorNonce]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const showError = (message) => {
+    setSuccessVisible(false);
+    setErrorMessage(message);
+    setErrorNonce((n) => n + 1);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const newErrors = validateForm(form);
     setErrors(newErrors);
 
-    if (Object.keys(newErrors).length === 0) {
-      const registrant = { ...form, id: generateId() };
-      const updated = [...registrants, registrant];
-      setRegistrants(updated);
-      saveRegistrants(updated);
+    if (Object.keys(newErrors).length > 0) {
+      showError(VALIDATION_ERROR);
+      return;
+    }
+
+    try {
+      await createRegistrant(form);
+      setCount((current) => current + 1);
       setForm(EMPTY_FORM);
-      setErrorToastVisible(false);
-      setToastVisible(true);
-    } else {
-      setToastVisible(false);
-      setErrorToastVisible(true);
-      setErrorToastNonce((n) => n + 1);
+      setErrorMessage(null);
+      setSuccessVisible(true);
+    } catch {
+      showError(NETWORK_ERROR);
     }
   };
 
@@ -133,15 +124,15 @@ export function App() {
     <div className="App">
       <h1>Inscription</h1>
 
-      {toastVisible && (
+      {successVisible && (
         <div role="alert" className="toast">
           Inscription réussie !
         </div>
       )}
 
-      {errorToastVisible && (
+      {errorMessage && (
         <div role="alert" className="toast toast--error">
-          Le formulaire contient des erreurs.
+          {errorMessage}
         </div>
       )}
 
@@ -187,18 +178,7 @@ export function App() {
         </button>
       </form>
 
-      <h2>Liste des inscrits</h2>
-      {registrants.length === 0 ? (
-        <p>Aucun inscrit pour le moment.</p>
-      ) : (
-        <ul>
-          {registrants.map((registrant) => (
-            <li key={registrant.id}>
-              {registrant.prenom} {registrant.nom}, {registrant.email} ({registrant.ville}, {registrant.codePostal})
-            </li>
-          ))}
-        </ul>
-      )}
+      <p>{count} inscrit(s)</p>
 
       <footer className="app-footer">
         <a
