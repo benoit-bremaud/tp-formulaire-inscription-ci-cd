@@ -8,6 +8,11 @@
 # testing
 /coverage
 
+# cypress generated artifacts (runs)
+cypress/videos
+cypress/screenshots
+cypress/downloads
+
 # production
 /build
 
