@@ -1,4 +1,12 @@
-import { calculateAge, isAdult, isValidEmail, isValidName, isValidPostalCode } from './validators';
+import {
+  calculateAge,
+  isAdult,
+  isPlausibleBirthDate,
+  isValidEmail,
+  isValidName,
+  isValidPostalCode,
+  MAX_AGE,
+} from './validators';
 
 describe('happy path', () => {
   describe('calculateAge', () => {
@@ -141,6 +149,60 @@ describe('sad path', () => {
 });
 
 describe('edge cases', () => {
-  // Reserved for boundary scenarios such as leap years, timezone shifts,
-  // unusual character classes, etc. Filled in upcoming PRs.
+  describe('aberrant birth dates', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2026-05-05T00:00:00Z'));
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    test('calculateAge returns an implausible age for 0001-01-01', () => {
+      const birth = new Date('0001-01-01T00:00:00Z');
+      expect(calculateAge(birth)).toBeGreaterThan(MAX_AGE);
+    });
+
+    test('isPlausibleBirthDate rejects 0001-01-01', () => {
+      const birth = new Date('0001-01-01T00:00:00Z');
+      expect(isPlausibleBirthDate(birth)).toBe(false);
+    });
+
+    test('isPlausibleBirthDate rejects a future birth date', () => {
+      const birth = new Date('2030-05-05T00:00:00Z');
+      expect(isPlausibleBirthDate(birth)).toBe(false);
+    });
+  });
+
+  describe('isPlausibleBirthDate age bounds', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date('2026-05-05T00:00:00Z'));
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    test('accepts the minimum age of 18', () => {
+      const birth = new Date('2008-05-05T00:00:00Z');
+      expect(isPlausibleBirthDate(birth)).toBe(true);
+    });
+
+    test('rejects an age below 18', () => {
+      const birth = new Date('2009-05-05T00:00:00Z');
+      expect(isPlausibleBirthDate(birth)).toBe(false);
+    });
+
+    test('accepts the maximum plausible age of 120', () => {
+      const birth = new Date('1906-05-05T00:00:00Z');
+      expect(isPlausibleBirthDate(birth)).toBe(true);
+    });
+
+    test('rejects an age above 120', () => {
+      const birth = new Date('1905-05-05T00:00:00Z');
+      expect(isPlausibleBirthDate(birth)).toBe(false);
+    });
+  });
 });
