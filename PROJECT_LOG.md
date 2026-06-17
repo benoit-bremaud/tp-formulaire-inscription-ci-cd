@@ -42,7 +42,9 @@ tierce testée par mocks, puis corrections issues du retour de notation du TP.
     `ERROR_MESSAGES`, pour que la doc générée couvre le composant principal (les
     `validators.js` étaient déjà documentés).
   - Nettoyage Sonar : `TypeError` + `Number.isNaN` dans `calculateAge`.
-  38 tests, 100 % de couverture. → release patch **0.2.5** (job `publish`).
+  38 tests, 100 % de couverture. → release patch **0.2.5** *en attente* :
+  déclenchée par le job `publish` sur le merge `1765b04` ; le commit
+  `chore(release): 0.2.5` et le tag `v0.2.5` seront ajoutés ici une fois publiés.
 
 ---
 
